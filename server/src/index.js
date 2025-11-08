@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
-const MONGO_URL = process.env.MONGO_URL || "mongodb://mongo:27017/mydb";
+const MONGO_URL = process.env.MONGO_URL || "mongodb://mongo:27017/aseguradora";
 const REDIS_URL = process.env.REDIS_URL || "redis://redis:6379";
 
 const app = express();
