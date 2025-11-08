@@ -6,6 +6,7 @@ import { seedDatabase } from "./seed.js"
 import agentesRouter from "./routes/agentes.js"
 import clientesRouter from "./routes/clientes.js"
 import siniestrosRouter from "./routes/siniestros.js"
+import vehiculosRouter from "./routes/vehiculos.js"
 
 dotenv.config()
 
@@ -25,6 +26,7 @@ app.get("/", (req, res) => res.send("OK"))
 app.use("/api/agentes", agentesRouter)
 app.use("/api/clientes", clientesRouter)
 app.use("/api/siniestros", siniestrosRouter)
+app.use("/api/vehiculos", vehiculosRouter)
 
 app.get("/redis", async (_req, res) => {
   const n = await redis.incr("hits");
