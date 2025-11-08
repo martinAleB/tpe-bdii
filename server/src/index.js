@@ -14,17 +14,20 @@ app.use(express.json());
 const mongoClient = new MongoClient(MONGO_URL);
 await mongoClient.connect();
 const db = mongoClient.db();
-const col = db.collection("ping");
+const col = db.collection("agentes");
 
 const redis = new Redis(REDIS_URL);
 
 app.get("/", (req, res) => res.send("OK"));
 
 app.get("/mongo", async (_req, res) => {
-  const doc = { ts: new Date() };
-  await col.insertOne(doc);
-  const count = await col.countDocuments();
-  res.json({ inserted: doc, count });
+  try {
+    const docs = await col.find().toArray();
+    res.json(docs);
+  } catch (err) {
+    console.error("Error fetching documents from MongoDB", err);
+    res.status(500).json({ error: "Failed to fetch documents" });
+  }
 });
 
 app.get("/redis", async (_req, res) => {
