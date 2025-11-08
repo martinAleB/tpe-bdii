@@ -5,11 +5,11 @@ services:
     image: mcr.microsoft.com/devcontainers/base:ubuntu
     init: true
     volumes:
-      - ..:/workspaces/${LOCAL_WORKSPACE_FOLDER_BASENAME}
+      - ..:/workspaces/${LOCAL_WORKSPACE_FOLDER_BASENAME:-tpe-bdii}
     command: sleep infinity
     environment:
-      MONGO_URL: ${MONGODB_URL}
-      REDIS_URL: ${REDIS_URL}
+      MONGO_URL: ${MONGODB_URL:-mongodb://mongo:27017/aseguradora}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       PORT: 3000
     depends_on:
       - mongo
