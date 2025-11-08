@@ -23,12 +23,16 @@ router.get("/active", async (req, res) => {
       },
       {
         $addFields: {
-          polizasAsignadas: { $size: "$polizas" },
+          polizas: { $size: "$polizas" },
         },
       },
       {
         $project: {
-          polizas: 0,
+          _id: 0,
+          nombre: 1,
+          apellido: 1,
+          matricula: 1,
+          polizas: 1,
         },
       },
     ];
