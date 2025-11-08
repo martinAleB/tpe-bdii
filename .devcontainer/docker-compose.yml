@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    init: true
+    volumes:
+      - ..:/workspaces/${LOCAL_WORKSPACE_FOLDER_BASENAME}
+    command: sleep infinity
+    environment:
+      MONGO_URL: ${MONGODB_URL}
+      REDIS_URL: ${REDIS_URL}
+      PORT: 3000
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: mydb
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mongo-data:
+  redis-data:

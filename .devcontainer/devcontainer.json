@@ -1,0 +1,47 @@
+{
+    "name": "node + mongo + redis",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "20"
+        },
+        "ghcr.io/devcontainers/features/git:1": {}
+    },
+    "forwardPorts": [
+        3000,
+        27017,
+        6379
+    ],
+    "portsAttributes": {
+        "3000": {
+            "label": "web",
+            "onAutoForward": "openBrowser"
+        },
+        "27017": {
+            "label": "mongodb"
+        },
+        "6379": {
+            "label": "redis"
+        }
+    },
+    "remoteEnv": {
+        "NODE_ENV": "development"
+    },
+    "postCreateCommand": "cd server && npm ci || npm i",
+    "postStartCommand": "cd server && npm run dev || npm start",
+    "mounts": [
+        "source=devcontainer-npm-cache,target=/home/node/.npm,type=volume"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "mongodb.mongodb-vscode",
+                "humao.rest-client",
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    }
+}
