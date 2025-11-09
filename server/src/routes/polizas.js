@@ -90,4 +90,48 @@ router.get("/active-by-date", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch pólizas activas" });
   }
 });
+
+router.get("/suspended-with-client-info", async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $match: {
+          estado: "Suspendida",
+        },
+      },
+      {
+        $lookup: {
+          from: CLIENTES_COLL,
+          localField: "id_cliente",
+          foreignField: "id_cliente",
+          as: "cliente",
+        },
+      },
+      {
+        $unwind: "$cliente",
+      },
+      {
+        $project: {
+          _id: 0,
+          id_poliza: 1,
+          id_cliente: 1,
+          fecha_inicio: 1,
+          fecha_fin: 1,
+          prima_mensual: 1,
+          estado: 1,
+          cobertura_total: 1,
+          "cliente.nombre": 1,
+          "cliente.apellido": 1,
+          "cliente.activo": 1,
+        },
+      },
+    ];
+
+    const suspendidas = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    res.json(suspendidas);
+  } catch (err) {
+    console.error("Error fetching pólizas suspendidas", err);
+    res.status(500).json({ error: "Failed to fetch pólizas suspendidas" });
+  }
+});
 export default router;
