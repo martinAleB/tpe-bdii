@@ -6,6 +6,65 @@ const COLL_NAME = "clientes";
 const POLIZAS_COLL = "polizas";
 const VEHICULOS_COLL = "vehiculos";
 
+router.get("/multiple-vehicles", async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $lookup: {
+          from: VEHICULOS_COLL,
+          let: { clienteIdStr: { $toString: "$id_cliente" } },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toString: "$id_cliente" }, "$$clienteIdStr"]
+                }
+              }
+            }
+          ],
+          as: "vehiculos",
+        },
+      },
+      {
+        $addFields: {
+          vehiculos_asegurados: {
+            $filter: {
+              input: "$vehiculos",
+              as: "v",
+              cond: {
+                $or: [
+                  { $eq: ["$$v.asegurado", true] },
+                  { $eq: ["$$v.asegurado", "True"] }
+                ]
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: { $gt: [{ $size: "$vehiculos_asegurados" }, 1] },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id_cliente: 1,
+          nombre: 1,
+          apellido: 1,
+          cantidad_vehiculos_asegurados: { $size: "$vehiculos_asegurados" },
+        },
+      },
+    ];
+
+    const clientes = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    res.json(clientes);
+  } catch (err) {
+    console.error("Error fetching clientes con múltiples vehículos", err);
+    res.status(500).json({ error: "Failed to fetch clientes con múltiples vehículos" });
+  }
+});
+
 router.get("/active", async (req, res) => {
     try {
     const pipeline = [
