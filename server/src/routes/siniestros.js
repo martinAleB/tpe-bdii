@@ -81,4 +81,36 @@ router.get("/open", async (req, res) => {
   }
 });
 
+router.get("/accidents-last-year", async (req, res) => {
+  try {
+    const now = new Date();
+    const lastYear = new Date(now);
+    lastYear.setFullYear(now.getFullYear() - 1);
+
+    const pipeline = [
+      {
+        $match: {
+          tipo: "Accidente",
+          fecha: { $gte: lastYear },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id_siniestro: 1,
+          tipo: 1,
+          fecha: 1,
+          monto_estimado: 1,
+        },
+      },
+    ];
+
+    const accidentes = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    res.json(accidentes);
+  } catch (err) {
+    console.error("Error fetching accidentes del último año", err);
+    res.status(500).json({ error: "Failed to fetch accidentes del último año" });
+  }
+});
+
 export default router;
