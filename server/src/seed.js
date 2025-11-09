@@ -7,11 +7,59 @@ const __dirname = path.dirname(__filename);
 const CSV_DIR = path.resolve(__dirname, "../../data/csv");
 
 const COLLECTION_SOURCES = [
-  { collection: "agentes", file: "agentes.csv" },
-  { collection: "polizas", file: "polizas.csv" },
-  { collection: "clientes", file: "clientes.csv" },
-  { collection: "siniestros", file: "siniestros.csv" },
-  { collection: "vehiculos", file: "vehiculos.csv" },
+  {
+    collection: "agentes",
+    file: "agentes.csv",
+    transform: (doc) => ({
+      ...doc,
+      id_agente: toInteger(doc.id_agente),
+      activo: toBoolean(doc.activo),
+    }),
+  },
+  {
+    collection: "polizas",
+    file: "polizas.csv",
+    transform: (doc) => ({
+      ...doc,
+      id_cliente: toInteger(doc.id_cliente),
+      id_agente: toInteger(doc.id_agente),
+      fecha_inicio: toDate(doc.fecha_inicio),
+      fecha_fin: toDate(doc.fecha_fin),
+      prima_mensual: toDecimal(doc.prima_mensual),
+      cobertura_total: toDecimal(doc.cobertura_total),
+    }),
+  },
+  {
+    collection: "clientes",
+    file: "clientes.csv",
+    transform: (doc) => ({
+      ...doc,
+      id_cliente: toInteger(doc.id_cliente),
+      dni: toInteger(doc.dni),
+      activo: toBoolean(doc.activo),
+    }),
+  },
+  {
+    collection: "siniestros",
+    file: "siniestros.csv",
+    transform: (doc) => ({
+      ...doc,
+      id_siniestro: toInteger(doc.id_siniestro),
+      fecha: toDate(doc.fecha),
+      monto_estimado: toDecimal(doc.monto_estimado),
+    }),
+  },
+  {
+    collection: "vehiculos",
+    file: "vehiculos.csv",
+    transform: (doc) => ({
+      ...doc,
+      id_vehiculo: toInteger(doc.id_vehiculo),
+      id_cliente: toInteger(doc.id_cliente),
+      anio: toInteger(doc.anio),
+      asegurado: toBoolean(doc.asegurado),
+    }),
+  },
 ];
 
 export async function seedDatabase(db) {
@@ -20,7 +68,7 @@ export async function seedDatabase(db) {
   );
 }
 
-async function seedCollection(db, { collection, file }) {
+async function seedCollection(db, { collection, file, transform }) {
   const existingDocs = await db.collection(collection).estimatedDocumentCount();
   if (existingDocs > 0) {
     return;
@@ -35,7 +83,7 @@ async function seedCollection(db, { collection, file }) {
     return;
   }
 
-  const documents = parseCsv(csvRaw);
+  const documents = parseCsv(csvRaw, transform);
   if (!documents.length) {
     console.warn(`[seed] ${file} no contenía filas para importar.`);
     return;
@@ -47,7 +95,7 @@ async function seedCollection(db, { collection, file }) {
   );
 }
 
-function parseCsv(csvText) {
+function parseCsv(csvText, transform = identity) {
   const sanitized = csvText.replace(/^\uFEFF/, "");
   const lines = sanitized
     .split(/\r?\n/)
@@ -60,23 +108,45 @@ function parseCsv(csvText) {
 
   const headers = lines[0].split(",").map((header) => header.trim());
   return lines.slice(1).map((line) => {
-    const values = line
-      .split(",")
-      .map((value) => (value ?? "").trim());
-    const doc = {};
-    headers.forEach((header, index) => {
-      doc[header] = normalizeValue(header, values[index]);
-    });
-    return doc;
+    const values = line.split(",").map((value) => (value ?? "").trim());
+    const doc = headers.reduce((acc, header, index) => {
+      acc[header] = values[index] ?? "";
+      return acc;
+    }, {});
+    return transform(doc) ?? doc;
   });
 }
 
-function normalizeValue(field, rawValue = "") {
-  const value = rawValue.trim();
-  if (field === "activo") {
-    const normalized = value.toLowerCase();
-    if (normalized === "true") return true;
-    if (normalized === "false") return false;
+const identity = (doc) => doc;
+
+function toInteger(rawValue = "") {
+  const parsed = Number.parseInt(rawValue, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function toDecimal(rawValue = "") {
+  const normalized = rawValue.replace(",", ".");
+  const parsed = Number.parseFloat(normalized);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function toBoolean(rawValue = "") {
+  const normalized = rawValue.trim().toLowerCase();
+  if (normalized === "true") return true;
+  if (normalized === "false") return false;
+  return null;
+}
+
+function toDate(rawValue = "") {
+  const [day, month, year] = rawValue
+    .split("/")
+    .map((part) => Number.parseInt(part, 10));
+  if (
+    [day, month, year].some(
+      (value) => Number.isNaN(value) || value === undefined
+    )
+  ) {
+    return null;
   }
-  return value;
+  return new Date(Date.UTC(year, month - 1, day));
 }

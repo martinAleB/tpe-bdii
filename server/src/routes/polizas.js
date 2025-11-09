@@ -1,0 +1,57 @@
+import { Router } from "express";
+import db from "../mongo-client.js";
+
+const router = Router();
+const COLL_NAME = "polizas";
+const CLIENTES_COLL = "clientes";
+
+router.get("/expired", async (req, res) => {
+    try {
+        const pipeline = [
+            {
+                $match: {
+                    estado: "Vencida"
+                }
+            },
+            {
+                $lookup: {
+                    from: CLIENTES_COLL,
+                    let: { polizaCliente: { $toString: "$id_cliente" } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: [{ $toString: "$id_cliente" }, "$$polizaCliente"]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                nombre: 1,
+                                apellido: 1
+                            }
+                        }
+                    ],
+                    as: "cliente"
+                }
+            },
+            { $unwind: "$cliente" },
+            {
+                $project: {
+                    _id: 0,
+                    nro_poliza: 1,
+                    fecha_fin: 1,
+                    cliente: { nombre: "$cliente.nombre", apellido: "$cliente.apellido" }
+                }
+            }
+        ];
+        const expiredPolizas = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+        res.json(expiredPolizas);
+    } catch (err) {
+        console.error("Error fetching expired polizas", err);
+        res.status(500).json({ error: "Failed to fetch expired polizas" });
+    }
+});
+
+export default router;
