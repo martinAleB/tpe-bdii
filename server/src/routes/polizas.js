@@ -54,4 +54,40 @@ router.get("/expired", async (req, res) => {
     }
 });
 
+
+router.get("/active-by-date", async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $match: {
+          estado: { $in: ["Activa"] },
+        },
+      },
+      {
+        $sort: {
+          fecha_inicio: 1,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id_poliza: 1,
+          id_cliente: 1,
+          id_agente: 1,
+          fecha_inicio: 1,
+          fecha_fin: 1,
+          prima_mensual: 1,
+          cobertura_total: 1,
+          estado:1,
+        },
+      },
+    ];
+
+    const polizas = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    res.json(polizas);
+  } catch (err) {
+    console.error("Error fetching pólizas activas", err);
+    res.status(500).json({ error: "Failed to fetch pólizas activas" });
+  }
+});
 export default router;

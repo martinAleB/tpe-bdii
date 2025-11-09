@@ -27,6 +27,7 @@ const COLLECTION_SOURCES = [
       fecha_fin: toDate(doc.fecha_fin),
       prima_mensual: toDecimal(doc.prima_mensual),
       cobertura_total: toDecimal(doc.cobertura_total),
+      estado: doc.estado,
     }),
   },
   {
