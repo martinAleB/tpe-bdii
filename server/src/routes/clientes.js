@@ -4,6 +4,7 @@ import db from "../mongo-client.js";
 const router = Router();
 const COLL_NAME = "clientes";
 const POLIZAS_COLL = "polizas";
+const VEHICULOS_COLL = "vehiculos";
 
 router.get("/active", async (req, res) => {
     try {
@@ -112,5 +113,169 @@ router.get("/no-active-policies", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch clientes sin pólizas activas" });
   }
 });
+
+router.post("/", async (req, res) => {
+  try {
+    const {
+      nombre,
+      apellido,
+      dni,
+      email,
+      telefono,
+      direccion,
+      ciudad,
+      provincia,
+    } = req.body;
+
+    //@todo: Chequear si existen campos obligatorios
+    if (!nombre || !apellido || !dni || !email) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
+    // @todo: Chequear la necesidad de validar existencia previa
+    const existing = await db.collection(COLL_NAME).findOne({
+      $or: [{ dni: parseInt(dni) }, { email }],
+    });
+    if (existing) {
+      return res
+        .status(409)
+        .json({ error: "Ya existe un cliente con ese DNI o email" });
+    }
+
+    const nextId =
+      (await db.collection(COLL_NAME).countDocuments()) + 1;
+
+    const newCliente = {
+      id_cliente: nextId,
+      nombre,
+      apellido,
+      dni: parseInt(dni),
+      email,
+      telefono,
+      direccion,
+      ciudad,
+      provincia,
+      activo: true,
+    };
+
+    await db.collection(COLL_NAME).insertOne(newCliente);
+    res.status(201).json({
+      message: "Cliente agregado correctamente",
+      cliente: newCliente,
+    });
+  } catch (err) {
+    console.error("Error al agregar cliente:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+router.delete("/:id_cliente", async (req, res) => {
+  try {
+    const id_cliente = parseInt(req.params.id_cliente);
+
+    /*@todo: Chequear necesidad de ver si tiene pólizas o vehículos asociados*/
+    const polizaActiva = await db.collection(POLIZAS_COLL).findOne({
+      id_cliente,
+      estado: "Activa",
+    });      
+
+  
+    if (polizaActiva) {
+      return res.status(400).json({
+        error:
+          "No se puede dar de baja un cliente con pólizas activas o vigentes",
+      });
+    }
+
+    const vehiculoAsociado = await db.collection(VEHICULOS_COLL).findOne({
+      id_cliente,
+    });
+
+    if (vehiculoAsociado) {
+      return res.status(400).json({
+        error: "No se puede dar de baja un cliente con vehículos asociados",
+      });
+    }
+
+    const result = await db.collection(COLL_NAME).updateOne(
+      { id_cliente },
+      { $set: { activo: false } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Cliente no encontrado" });
+    }
+
+    res.json({ message: "Cliente dado de baja correctamente" });
+  } catch (err) {
+    console.error("Error al dar de baja cliente:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+router.get("/:id_cliente", async (req, res) => {
+  try {
+    const id_cliente = parseInt(req.params.id_cliente);
+
+    const cliente = await db.collection(COLL_NAME).findOne(
+      { id_cliente },
+      { projection: { _id: 0 } } // ocultamos el _id interno de Mongo
+    );
+
+    if (!cliente) {
+      return res.status(404).json({ error: "Cliente no encontrado" });
+    }
+
+    res.json(cliente);
+  } catch (err) {
+    console.error("Error al obtener cliente:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+router.put("/:id_cliente", async (req, res) => {
+    try {
+      const id_cliente = parseInt(req.params.id_cliente);
+      const updates = req.body;
+
+      // Evitar modificar el id_cliente
+      delete updates.id_cliente;
+
+      // Si se pasa "dni" o "email", validar que no estén en uso por otro cliente
+      if (updates.dni || updates.email) {
+        const conflict = await db.collection(COLL_NAME).findOne({
+          $and: [
+            { id_cliente: { $ne: id_cliente } },
+            {
+              $or: [
+                { dni: parseInt(updates.dni) || -1 },
+                { email: updates.email },
+              ],
+            },
+          ],
+        });
+
+        if (conflict) {
+          return res
+            .status(409)
+            .json({ error: "DNI o email ya están registrados por otro cliente" });
+        }
+      }
+
+      const result = await db.collection(COLL_NAME).updateOne(
+        { id_cliente },
+        { $set: updates }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ error: "Cliente no encontrado" });
+      }
+
+      res.json({ message: "Cliente actualizado correctamente" });
+    } catch (err) {
+      console.error("Error al actualizar cliente:", err);
+      res.status(500).json({ error: "Error interno del servidor" });
+    }
+  });
 
 export default router;
