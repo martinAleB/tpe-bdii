@@ -5,6 +5,7 @@ const router = Router();
 const COLL_NAME = "siniestros";
 const POLIZAS_COLL = "polizas";
 const CLIENTES_COLL = "clientes";
+const ESTADOS_VALIDOS = ["Abierto", "En evaluación", "Cerrado"];
 
 router.get("/open", async (req, res) => {
   try {
@@ -110,6 +111,68 @@ router.get("/accidents-last-year", async (req, res) => {
   } catch (err) {
     console.error("Error fetching accidentes del último año", err);
     res.status(500).json({ error: "Failed to fetch accidentes del último año" });
+  }
+});
+
+router.post("/", async (req, res) => {
+  try {
+    const {
+      nro_poliza,
+      fecha,
+      tipo,
+      monto_estimado,
+      descripcion,
+      estado,
+    } = req.body;
+
+    if (!nro_poliza || !fecha || !tipo || !monto_estimado || !descripcion) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
+    const poliza = await db.collection(POLIZAS_COLL).findOne({
+      nro_poliza: nro_poliza.trim(),
+      estado: { $in: ["Activa", "Vigente"] },
+    });
+
+    if (!poliza) {
+      return res.status(400).json({
+        error: "La póliza no existe o no está activa/vigente",
+      });
+    }
+
+    const estadoFinal = estado ? estado.trim() : "Abierto";
+
+    if (!estadosValidos.includes(estadoFinal)) {
+      return res.status(400).json({
+        error: `Estado inválido. Debe ser uno de: ${ESTADOS_VALIDOS.join(", ")}`,
+      });
+    }
+
+    const nextId =
+      (await db.collection(COLL_NAME).countDocuments()) + 1;
+
+    const fechaParsed = new Date(fecha);
+    const montoParsed = parseFloat(monto_estimado);
+
+    const nuevoSiniestro = {
+      id_siniestro: nextId,
+      nro_poliza: nro_poliza.trim(),
+      fecha: fechaParsed,
+      tipo,
+      monto_estimado: montoParsed,
+      descripcion,
+      estado: estado || "Abierto",
+    };
+
+    await db.collection(COLL_NAME).insertOne(nuevoSiniestro);
+
+    res.status(201).json({
+      message: "Siniestro registrado correctamente",
+      siniestro: nuevoSiniestro,
+    });
+  } catch (err) {
+    console.error("Error al registrar siniestro:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 

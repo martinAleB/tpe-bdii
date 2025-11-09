@@ -132,6 +132,27 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
+    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+    if (!nombreRegex.test(nombre) || !nombreRegex.test(apellido)) {
+      return res
+        .status(400)
+        .json({ error: "El nombre y apellido deben contener solo letras" });
+    }
+
+    const dniNum = parseInt(dni);
+    if (Number.isNaN(dniNum) || dniNum < 0 || dniNum > 99999999) {
+      return res
+        .status(400)
+        .json({ error: "El DNI debe ser un número de hasta 8 dígitos" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ error: "El email no tiene un formato válido" });
+    }
+
     // @todo: Chequear la necesidad de validar existencia previa
     const existing = await db.collection(COLL_NAME).findOne({
       $or: [{ dni: parseInt(dni) }, { email }],
@@ -238,10 +259,42 @@ router.put("/:id_cliente", async (req, res) => {
       const id_cliente = parseInt(req.params.id_cliente);
       const updates = req.body;
 
-      // Evitar modificar el id_cliente
       delete updates.id_cliente;
 
-      // Si se pasa "dni" o "email", validar que no estén en uso por otro cliente
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ error: "No se enviaron campos para actualizar" });
+      }
+
+      const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (updates.nombre && !nombreRegex.test(updates.nombre)) {
+        return res
+          .status(400)
+          .json({ error: "El nombre debe contener solo letras" });
+      }
+      if (updates.apellido && !nombreRegex.test(updates.apellido)) {
+        return res
+          .status(400)
+          .json({ error: "El apellido debe contener solo letras" });
+      }
+
+      if (updates.dni !== undefined) {
+        const dniNum = parseInt(updates.dni);
+        if (Number.isNaN(dniNum) || dniNum < 0 || dniNum > 99999999) {
+          return res
+            .status(400)
+            .json({ error: "El DNI debe ser un número de hasta 8 dígitos" });
+        }
+        updates.dni = dniNum;
+      }
+
+      if (updates.email && !emailRegex.test(updates.email)) {
+        return res
+          .status(400)
+          .json({ error: "El email no tiene un formato válido" });
+      }
+
       if (updates.dni || updates.email) {
         const conflict = await db.collection(COLL_NAME).findOne({
           $and: [
