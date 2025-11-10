@@ -1,5 +1,6 @@
 import { Router } from "express";
 import db from "../mongo-client.js";
+import redis from "../redis-client.js";
 
 const router = Router();
 const COLL_NAME = "clientes";
@@ -118,6 +119,91 @@ router.get("/active", async (req, res) => {
   } catch (err) {
     console.error("Error fetching active clientes", err);
     res.status(500).json({ error: "Failed to fetch active clientes" });
+  }
+});
+
+
+router.get("/top-cobertura", async (req, res) => {
+  try {
+    const cacheKey = "ranking:cobertura_total";
+
+    const cached = await redis.zrevrange(cacheKey, 0, 9, "WITHSCORES");
+
+    if (cached && cached.length > 0) {
+      const ranking = [];
+      for (let i = 0; i < cached.length; i += 2) {
+        ranking.push({
+          id_cliente: parseInt(cached[i]),
+          cobertura_total: parseFloat(cached[i + 1]),
+        });
+      }
+
+      const clientesIds = ranking.map((r) => r.id_cliente);
+      const clientes = await db
+        .collection(COLL_NAME)
+        .find({ id_cliente: { $in: clientesIds } })
+        .project({ _id: 0, id_cliente: 1, nombre: 1, apellido: 1 })
+        .toArray();
+
+      const resultado = ranking.map((r) => ({
+        ...r,
+        ...clientes.find((c) => c.id_cliente === r.id_cliente),
+      }));
+
+      return res.json({
+        top10: resultado,
+      });
+    }
+
+    const pipeline = [
+      {
+        $group: {
+          _id: "$id_cliente",
+          cobertura_total: { $sum: "$cobertura_total" },
+        },
+      },
+      { $sort: { cobertura_total: -1 } },
+      { $limit: 10 },
+    ];
+
+    const topClientes = await db
+      .collection(POLIZAS_COLL)
+      .aggregate(pipeline)
+      .toArray();
+
+    if (topClientes.length === 0) {
+      return res.status(404).json({ message: "No hay pólizas cargadas" });
+    }
+
+    const redisData = [];
+    topClientes.forEach((c) => {
+      redisData.push(c.cobertura_total, c._id.toString());
+    });
+
+    if (redisData.length > 0) {
+      await redis.zadd(cacheKey, ...redisData);
+      await redis.expire(cacheKey, 60);
+    }
+
+    const clientesIds = topClientes.map((c) => c._id);
+    const clientes = await db
+      .collection(COLL_NAME)
+      .find({ id_cliente: { $in: clientesIds } })
+      .project({ _id: 0, id_cliente: 1, nombre: 1, apellido: 1 })
+      .toArray();
+
+    const resultado = topClientes.map((c) => ({
+      id_cliente: c._id,
+      cobertura_total: c.cobertura_total,
+      ...clientes.find((cl) => cl.id_cliente === c._id),
+    }));
+
+    res.json({
+      top10: resultado,
+    });
+  } catch (err) {
+    console.error("Error al obtener top 10 clientes:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
@@ -388,6 +474,6 @@ router.put("/:id_cliente", async (req, res) => {
       console.error("Error al actualizar cliente:", err);
       res.status(500).json({ error: "Error interno del servidor" });
     }
-  });
+});
 
 export default router;
