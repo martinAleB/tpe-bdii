@@ -1,5 +1,6 @@
 import { Router } from "express";
 import db from "../mongo-client.js";
+import redis from "../redis-client.js";
 
 const router = Router();
 const COLL_NAME = "polizas";
@@ -226,6 +227,12 @@ router.post("/", async (req, res) => {
     };
 
     await db.collection(COLL_NAME).insertOne(nuevaPoliza);
+
+    await redis.zincrby(
+      "ranking:cobertura_total",
+      cobertura_total,
+      id_cliente.toString()
+    );
 
     res.status(201).json({
       message: "Póliza emitida correctamente",
