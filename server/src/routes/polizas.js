@@ -4,6 +4,7 @@ import db from "../mongo-client.js";
 const router = Router();
 const COLL_NAME = "polizas";
 const CLIENTES_COLL = "clientes";
+const AGENTES_COLL = "agentes";
 
 router.get("/expired", async (req, res) => {
     try {
@@ -132,6 +133,107 @@ router.get("/suspended-with-client-info", async (req, res) => {
   } catch (err) {
     console.error("Error fetching pólizas suspendidas", err);
     res.status(500).json({ error: "Failed to fetch pólizas suspendidas" });
+  }
+});
+
+router.post("/", async (req, res) => {
+  try {
+    const {
+      id_cliente,
+      id_agente,
+      tipo,
+      fecha_inicio,
+      fecha_fin,
+      prima_mensual,
+      cobertura_total,
+      estado,
+    } = req.body;
+
+    if (
+      !id_cliente ||
+      !id_agente ||
+      !tipo ||
+      !fecha_inicio ||
+      !fecha_fin ||
+      !prima_mensual ||
+      !cobertura_total
+    ) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
+    const cliente = await db.collection(CLIENTES_COLL).findOne({
+      id_cliente: parseInt(id_cliente),
+      activo: true,
+    });
+
+    if (!cliente) {
+      return res
+        .status(400)
+        .json({ error: "El cliente no existe o no está activo" });
+    }
+
+    const agente = await db.collection(AGENTES_COLL).findOne({
+      id_agente: parseInt(id_agente),
+      activo: true,
+    });
+
+    if (!agente) {
+      return res
+        .status(400)
+        .json({ error: "El agente no existe o no está activo" });
+    }
+
+    const inicio = new Date(fecha_inicio);
+    const fin = new Date(fecha_fin);
+
+    if (isNaN(inicio) || isNaN(fin) || inicio >= fin) {
+      return res.status(400).json({
+        error: "Las fechas deben ser válidas y fecha_inicio < fecha_fin",
+      });
+    }
+
+    const prima = parseFloat(prima_mensual);
+    const cobertura = parseFloat(cobertura_total);
+
+    if (isNaN(prima) || prima <= 0 || isNaN(cobertura) || cobertura <= 0) {
+      return res
+        .status(400)
+        .json({ error: "Los montos deben ser valores numéricos positivos" });
+    }
+
+    const estadosValidos = ["Activa", "Vencida", "Suspendida"];
+    const estadoFinal = estado ? estado.trim() : "Activa";
+
+    if (!estadosValidos.includes(estadoFinal)) {
+      return res.status(400).json({
+        error: `Estado inválido. Debe ser uno de: ${estadosValidos.join(", ")}`,
+      });
+    }
+
+    const nextNumber = (await db.collection(COLL_NAME).countDocuments()) + 1001;
+    const nro_poliza = `POL${nextNumber}`;
+
+    const nuevaPoliza = {
+      nro_poliza,
+      id_cliente: parseInt(id_cliente),
+      id_agente: parseInt(id_agente),
+      tipo,
+      fecha_inicio: inicio,
+      fecha_fin: fin,
+      prima_mensual: prima,
+      cobertura_total: cobertura,
+      estado: estadoFinal,
+    };
+
+    await db.collection(COLL_NAME).insertOne(nuevaPoliza);
+
+    res.status(201).json({
+      message: "Póliza emitida correctamente",
+      poliza: nuevaPoliza,
+    });
+  } catch (err) {
+    console.error("Error al emitir póliza:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 export default router;
