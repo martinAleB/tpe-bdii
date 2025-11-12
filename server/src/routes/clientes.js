@@ -106,7 +106,7 @@ router.get("/active", async (req, res) => {
       },
       {
         $project: {
-          _id: 0,
+          _id: "$id_cliente",
           nombre: 1,
           apellido: 1,
           polizasVigentes: 1,

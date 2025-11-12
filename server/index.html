@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorador de API</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #2c3e50;
+      color: #ecf0f1;
+      overflow-y: auto;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h1 {
+      padding: 20px;
+      font-size: 20px;
+      background: #1a252f;
+      border-bottom: 1px solid #34495e;
+    }
+
+    .endpoint-group {
+      margin: 10px 0;
+    }
+
+    .endpoint-group h2 {
+      padding: 12px 20px;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: #95a5a6;
+      background: #34495e;
+      letter-spacing: 0.5px;
+    }
+
+    .endpoint-item {
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-left: 3px solid transparent;
+      font-size: 14px;
+    }
+
+    .endpoint-item:hover {
+      background: #34495e;
+      border-left-color: #3498db;
+    }
+
+    .endpoint-item.active {
+      background: #34495e;
+      border-left-color: #3498db;
+    }
+
+    .method-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .method-get { background: #27ae60; color: white; }
+    .method-post { background: #3498db; color: white; }
+    .method-put { background: #f39c12; color: white; }
+    .method-delete { background: #e74c3c; color: white; }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+    }
+
+    .content-header {
+      margin-bottom: 30px;
+    }
+
+    .content-header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .content-header p {
+      color: #7f8c8d;
+      font-size: 15px;
+    }
+
+    .action-section {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+    }
+
+    .action-section h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    button:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .response-section {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .response-section h3 {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+
+    .response-container {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .response-container.empty {
+      background: #f8f9fa;
+      color: #6c757d;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #95a5a6;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #e74c3c;
+    }
+
+    .success {
+      background: #efe;
+      color: #3c763d;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #27ae60;
+    }
+
+    .row {
+      display: flex;
+      gap: 15px;
+    }
+
+    .row .form-group {
+      flex: 1;
+    }
+
+    /* Adding styles for component-based display */
+    .data-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .data-card {
+      background: #2a2a2a;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .data-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #3a3a3a;
+    }
+
+    .data-card-title {
+      font-weight: 600;
+      color: #58a6ff;
+      font-size: 14px;
+    }
+
+    .data-card-body {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .data-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .data-field-label {
+      font-size: 11px;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-field-value {
+      color: #d4d4d4;
+      font-size: 13px;
+    }
+
+    .data-field-value.boolean-true {
+      color: #3fb950;
+    }
+
+    .data-field-value.boolean-false {
+      color: #f85149;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .view-toggle button {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: #404040;
+      color: #d4d4d4;
+    }
+
+    .view-toggle button.active {
+      background: #3498db;
+      color: white;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #8b949e;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h1>Explorador de API</h1>
+    
+    
+
+    <div class="endpoint-group">
+      <h2>Agentes</h2>
+      <div class="endpoint-item" data-endpoint="agentes-active">
+        <span class="method-badge method-get">GET</span>
+        Agentes Activos
+      </div>
+      <div class="endpoint-item" data-endpoint="agentes-sinisters">
+        <span class="method-badge method-get">GET</span>
+        Con Conteo de Siniestros
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <h2>Clientes</h2>
+      <div class="endpoint-item" data-endpoint="clientes-multiple-vehicles">
+        <span class="method-badge method-get">GET</span>
+        Múltiples Vehículos
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-active">
+        <span class="method-badge method-get">GET</span>
+        Clientes Activos
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-top-cobertura">
+        <span class="method-badge method-get">GET</span>
+        Top Cobertura
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-no-active">
+        <span class="method-badge method-get">GET</span>
+        Sin Pólizas Activas
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-get-by-id">
+        <span class="method-badge method-get">GET</span>
+        Obtener por ID
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-create">
+        <span class="method-badge method-post">POST</span>
+        Crear Cliente
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-update">
+        <span class="method-badge method-put">PUT</span>
+        Actualizar Cliente
+      </div>
+      <div class="endpoint-item" data-endpoint="clientes-deactivate">
+        <span class="method-badge method-delete">DEL</span>
+        Desactivar Cliente
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <h2>Pólizas</h2>
+      <div class="endpoint-item" data-endpoint="polizas-expired">
+        <span class="method-badge method-get">GET</span>
+        Pólizas Vencidas
+      </div>
+      <div class="endpoint-item" data-endpoint="polizas-active">
+        <span class="method-badge method-get">GET</span>
+        Activas por Fecha
+      </div>
+      <div class="endpoint-item" data-endpoint="polizas-suspended">
+        <span class="method-badge method-get">GET</span>
+        Suspendidas
+      </div>
+      <div class="endpoint-item" data-endpoint="polizas-create">
+        <span class="method-badge method-post">POST</span>
+        Crear Póliza
+      </div>
+    </div>
+
+    <div class="endpoint-group">
+      <h2>Siniestros</h2>
+      <div class="endpoint-item" data-endpoint="siniestros-open">
+        <span class="method-badge method-get">GET</span>
+        Siniestros Abiertos
+      </div>
+      <div class="endpoint-item" data-endpoint="siniestros-accidents">
+        <span class="method-badge method-get">GET</span>
+        Accidentes Último Año
+      </div>
+      <div class="endpoint-item" data-endpoint="siniestros-create">
+        <span class="method-badge method-post">POST</span>
+        Crear Siniestro
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div id="content-area">
+      <div class="content-header">
+        <h1>Bienvenido al Explorador de API</h1>
+        <p>Seleccioná un endpoint de la barra lateral para comenzar</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000';
+    
+    let currentViewMode = 'components'; // 'components' or 'json'
+    
+    const endpoints = {
+      'root': {
+        title: 'Estado de Salud',
+        description: 'Verificar si la API está funcionando',
+        method: 'GET',
+        url: '/',
+        render: renderSimpleGetEndpoint
+      },
+      'agentes-active': {
+        title: 'Agentes Activos',
+        description: 'Lista de agentes activos con conteo de pólizas',
+        method: 'GET',
+        url: '/api/agentes/active',
+        render: renderSimpleGetEndpoint
+      },
+      'agentes-sinisters': {
+        title: 'Agentes con Conteo de Siniestros',
+        description: 'Agentes con total de siniestros por agente',
+        method: 'GET',
+        url: '/api/agentes/with-sinisters-count',
+        render: renderSimpleGetEndpoint
+      },
+      'clientes-multiple-vehicles': {
+        title: 'Clientes con Múltiples Vehículos',
+        description: 'Clientes con más de un vehículo asegurado',
+        method: 'GET',
+        url: '/api/clientes/multiple-vehicles',
+        render: renderSimpleGetEndpoint
+      },
+      'clientes-active': {
+        title: 'Clientes Activos',
+        description: 'Clientes activos con al menos una póliza activa/vigente',
+        method: 'GET',
+        url: '/api/clientes/active',
+        render: renderSimpleGetEndpoint
+      },
+      'clientes-top-cobertura': {
+        title: 'Top Cobertura',
+        description: 'Top 10 clientes por cobertura total (usa caché de Redis)',
+        method: 'GET',
+        url: '/api/clientes/top-cobertura',
+        render: renderSimpleGetEndpoint
+      },
+      'clientes-no-active': {
+        title: 'Clientes sin Pólizas Activas',
+        description: 'Clientes sin pólizas activas/vigentes',
+        method: 'GET',
+        url: '/api/clientes/no-active-policies',
+        render: renderSimpleGetEndpoint
+      },
+      'clientes-get-by-id': {
+        title: 'Obtener Cliente por ID',
+        description: 'Obtener un único cliente por ID',
+        method: 'GET',
+        url: '/api/clientes/:id',
+        render: renderGetByIdEndpoint
+      },
+      'clientes-create': {
+        title: 'Crear Cliente',
+        description: 'Crear un nuevo cliente con campos validados',
+        method: 'POST',
+        url: '/api/clientes',
+        render: renderCreateClientEndpoint
+      },
+      'clientes-update': {
+        title: 'Actualizar Cliente',
+        description: 'Actualizar datos de cliente con validación y chequeo de conflictos',
+        method: 'PUT',
+        url: '/api/clientes/:id',
+        render: renderUpdateClientEndpoint
+      },
+      'clientes-deactivate': {
+        title: 'Desactivar Cliente',
+        description: 'Desactivar cliente (establece activo=false)',
+        method: 'DELETE',
+        url: '/api/clientes/:id',
+        render: renderDeactivateClientEndpoint
+      },
+      'polizas-expired': {
+        title: 'Pólizas Vencidas',
+        description: 'Pólizas vencidas con información del cliente',
+        method: 'GET',
+        url: '/api/polizas/expired',
+        render: renderSimpleGetEndpoint
+      },
+      'polizas-active': {
+        title: 'Pólizas Activas por Fecha',
+        description: 'Pólizas activas ordenadas por fecha de inicio',
+        method: 'GET',
+        url: '/api/polizas/active-by-date',
+        render: renderSimpleGetEndpoint
+      },
+      'polizas-suspended': {
+        title: 'Pólizas Suspendidas',
+        description: 'Pólizas suspendidas con información del cliente',
+        method: 'GET',
+        url: '/api/polizas/suspended-with-client-info',
+        render: renderSimpleGetEndpoint
+      },
+      'polizas-create': {
+        title: 'Crear Póliza',
+        description: 'Crear nueva póliza (validada y cacheada en Redis)',
+        method: 'POST',
+        url: '/api/polizas',
+        render: renderCreatePolicyEndpoint
+      },
+      'siniestros-open': {
+        title: 'Siniestros Abiertos',
+        description: 'Siniestros abiertos con información del cliente vinculada',
+        method: 'GET',
+        url: '/api/siniestros/open',
+        render: renderSimpleGetEndpoint
+      },
+      'siniestros-accidents': {
+        title: 'Accidentes del Último Año',
+        description: 'Siniestros de tipo accidente en los últimos 12 meses',
+        method: 'GET',
+        url: '/api/siniestros/accidents-last-year',
+        render: renderSimpleGetEndpoint
+      },
+      'siniestros-create': {
+        title: 'Crear Siniestro',
+        description: 'Registrar nuevo siniestro (validado y vinculado a póliza)',
+        method: 'POST',
+        url: '/api/siniestros',
+        render: renderCreateSiniestroEndpoint
+      }
+    };
+
+    // Event listeners
+    document.querySelectorAll('.endpoint-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        
+        const endpointKey = item.getAttribute('data-endpoint');
+        const endpoint = endpoints[endpointKey];
+        
+        if (endpoint) {
+          endpoint.render(endpoint);
+        }
+      });
+    });
+
+    // Render functions
+    function renderSimpleGetEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Solicitud</h3>
+          <button onclick="executeGet('${endpoint.url}')">Ejecutar ${endpoint.method} ${endpoint.url}</button>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    function renderGetByIdEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Solicitud</h3>
+          <div class="form-group">
+            <label>ID del Cliente</label>
+            <input type="number" id="client-id" placeholder="Ingresá el ID del cliente">
+          </div>
+          <button onclick="executeGetById()">Ejecutar GET</button>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    function renderCreateClientEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Cuerpo de Solicitud</h3>
+          <form id="create-client-form" onsubmit="executeCreateClient(event)">
+            <div class="row">
+              <div class="form-group">
+                <label>Nombre *</label>
+                <input type="text" name="nombre" required>
+              </div>
+              <div class="form-group">
+                <label>Apellido *</label>
+                <input type="text" name="apellido" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label>Teléfono *</label>
+                <input type="text" name="telefono" placeholder="+54 11 1234 5678" required>
+              </div>
+              <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Activo</label>
+              <select name="activo">
+                <option value="true">Verdadero</option>
+                <option value="false">Falso</option>
+              </select>
+            </div>
+            <button type="submit">Crear Cliente</button>
+          </form>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    function renderUpdateClientEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Solicitud</h3>
+          <form id="update-client-form" onsubmit="executeUpdateClient(event)">
+            <div class="form-group">
+              <label>ID del Cliente *</label>
+              <input type="number" name="id" required>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="nombre">
+              </div>
+              <div class="form-group">
+                <label>Apellido</label>
+                <input type="text" name="apellido">
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" name="telefono">
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Activo</label>
+              <select name="activo">
+                <option value="">-- Sin cambios --</option>
+                <option value="true">Verdadero</option>
+                <option value="false">Falso</option>
+              </select>
+            </div>
+            <button type="submit">Actualizar Cliente</button>
+          </form>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    function renderDeactivateClientEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Solicitud</h3>
+          <div class="form-group">
+            <label>ID del Cliente</label>
+            <input type="number" id="deactivate-id" placeholder="Ingresá el ID del cliente">
+          </div>
+          <button onclick="executeDeactivateClient()">Desactivar Cliente</button>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    function renderCreatePolicyEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Cuerpo de Solicitud</h3>
+          <form id="create-policy-form" onsubmit="executeCreatePolicy(event)">
+            <div class="row">
+              <div class="form-group">
+                <label>ID del Cliente *</label>
+                <input type="int" name="id_cliente" required>
+              </div>
+              <div class="form-group">
+                <label>ID del Agente *</label>
+                <input type="int" name="id_agente" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label>Fecha de Inicio *</label>
+                <input type="date" name="fecha_inicio" required>
+              </div>
+              <div class="form-group">
+                <label>Fecha de Vencimiento *</label>
+                <input type="date" name="fecha_vencimiento" required>
+              </div>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Poliza *</label>
+                <input type="text" name="tipo" required>
+              </div>
+            <div class="form-group">
+              <label>Cobertura Total *</label>
+              <input type="number" name="cobertura_total" step="0.01" placeholder="300000.00" required>
+            </div>
+            <div class="form-group">
+              <label>Prima Mensual *</label>
+              <input type="number" name="prima_mensual" step="0.01" placeholder="3000.00" required>
+            </div>
+            <button type="submit">Crear Póliza</button>
+          </form>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    function renderCreateSiniestroEndpoint(endpoint) {
+      const content = `
+        <div class="content-header">
+          <h1>${endpoint.title}</h1>
+          <p>${endpoint.description}</p>
+        </div>
+        
+        <div class="action-section">
+          <h3>Cuerpo de Solicitud</h3>
+          <form id="create-siniestro-form" onsubmit="executeCreateSiniestro(event)">
+            <div class="row">
+              <div class="form-group">
+                <label>ID de Póliza *</label>
+                <input type="number" name="id_poliza" required>
+              </div>
+              <div class="form-group">
+                <label>Tipo *</label>
+                <select name="tipo" required>
+                  <option value="">-- Seleccionar --</option>
+                  <option value="robo">Robo</option>
+                  <option value="accidente">Accidente</option>
+                  <option value="incendio">Incendio</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Fecha *</label>
+              <input type="date" name="fecha" required>
+            </div>
+            <div class="form-group">
+              <label>Descripción *</label>
+              <textarea name="descripcion" required></textarea>
+            </div>
+            <button type="submit">Crear Siniestro</button>
+          </form>
+        </div>
+        
+        <div class="response-section">
+          <h3>Respuesta</h3>
+          <div class="view-toggle">
+            <button class="active" onclick="toggleView('components')">Vista Componentes</button>
+            <button onclick="toggleView('json')">JSON Crudo</button>
+          </div>
+          <div id="response" class="response-container empty">Sin respuesta aún</div>
+        </div>
+      `;
+      
+      document.getElementById('content-area').innerHTML = content;
+    }
+
+    // API execution functions
+    async function executeGet(url) {
+      showLoading();
+      try {
+        const response = await fetch(API_BASE + url);
+        const data = await response.text();
+        
+        try {
+          const jsonData = JSON.parse(data);
+          showResponse(jsonData, response.ok);
+        } catch {
+          showResponse(data, response.ok);
+        }
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function executeGetById() {
+      const id = document.getElementById('client-id').value;
+      if (!id) {
+        showError('Please enter a client ID');
+        return;
+      }
+      
+      showLoading();
+      try {
+        const response = await fetch(`${API_BASE}/api/clientes/${id}`);
+        const data = await response.json();
+        showResponse(data, response.ok);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function executeCreateClient(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      const body = {
+        nombre: formData.get('nombre'),
+        apellido: formData.get('apellido'),
+        telefono: formData.get('telefono'),
+        email: formData.get('email'),
+        activo: formData.get('activo') === 'true'
+      };
+      
+      showLoading();
+      try {
+        const response = await fetch(`${API_BASE}/api/clientes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        showResponse(data, response.ok);
+        if (response.ok) form.reset();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function executeUpdateClient(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const id = formData.get('id');
+      
+      const body = {};
+      if (formData.get('nombre')) body.nombre = formData.get('nombre');
+      if (formData.get('apellido')) body.apellido = formData.get('apellido');
+      if (formData.get('telefono')) body.telefono = formData.get('telefono');
+      if (formData.get('email')) body.email = formData.get('email');
+      if (formData.get('activo')) body.activo = formData.get('activo') === 'true';
+      
+      showLoading();
+      try {
+        const response = await fetch(`${API_BASE}/api/clientes/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        showResponse(data, response.ok);
+        if (response.ok) form.reset();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function executeDeactivateClient() {
+      const id = document.getElementById('deactivate-id').value;
+      if (!id) {
+        showError('Please enter a client ID');
+        return;
+      }
+      
+      showLoading();
+      try {
+        const response = await fetch(`${API_BASE}/api/clientes/${id}`, {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        showResponse(data, response.ok);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function executeCreatePolicy(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      const body = {
+        id_cliente: parseInt(formData.get('id_cliente')),
+        id_agente: parseInt(formData.get('id_agente')),
+        fecha_inicio: formData.get('fecha_inicio'),
+        fecha_fin: formData.get('fecha_vencimiento'),
+        cobertura_total: parseFloat(formData.get('cobertura_total')),
+        prima_mensual: parseFloat(formData.get('prima_mensual')),
+        tipo:formData.get('tipo')
+      };
+      
+      showLoading();
+      try {
+        const response = await fetch(`${API_BASE}/api/polizas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        showResponse(data, response.ok);
+        if (response.ok) form.reset();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function executeCreateSiniestro(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      const body = {
+        id_poliza: parseInt(formData.get('id_poliza')),
+        tipo: formData.get('tipo'),
+        descripcion: formData.get('descripcion'),
+        fecha: formData.get('fecha')
+      };
+      
+      showLoading();
+      try {
+        const response = await fetch(`${API_BASE}/api/siniestros`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        showResponse(data, response.ok);
+        if (response.ok) form.reset();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    // UI helper functions
+    function toggleView(mode) {
+      currentViewMode = mode;
+      
+      // Update button states
+      const buttons = document.querySelectorAll('.view-toggle button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Re-render current response if exists
+      const responseDiv = document.getElementById('response');
+      if (responseDiv.dataset.lastResponse) {
+        const data = JSON.parse(responseDiv.dataset.lastResponse);
+        const success = responseDiv.dataset.lastSuccess === 'true';
+        showResponse(data, success);
+      }
+    }
+    
+    function renderComponentView(data) {
+      if (!data) {
+        return '<div class="empty-state"><div class="empty-state-icon">📭</div><div>Sin datos para mostrar</div></div>';
+      }
+      
+      // Handle single object
+      if (!Array.isArray(data)) {
+        return renderSingleComponent(data);
+      }
+      
+      // Handle array of objects
+      if (data.length === 0) {
+        return '<div class="empty-state"><div class="empty-state-icon">📭</div><div>No hay resultados</div></div>';
+      }
+      
+      return `<div class="data-list">${data.map(renderSingleComponent).join('')}</div>`;
+    }
+    
+    function renderSingleComponent(item) {
+      if (typeof item !== 'object' || item === null) {
+        return `<div class="data-card"><div class="data-field-value">${item}</div></div>`;
+      }
+      
+      // Determine title field (id or first field)
+      const titleField = item.id || item._id || item.id_cliente || item.id_agente || item.id_poliza || item.nombre || Object.values(item)[0];
+      const titleLabel = item.id ? `ID: ${item.id}` : (item._id ? `ID: ${item._id}` : 'Registro');
+      
+      const fields = Object.entries(item)
+        .filter(([key]) => key !== '_id' && key !== '__v')
+        .map(([key, value]) => {
+          const displayValue = formatValue(value);
+          const valueClass = typeof value === 'boolean' ? `boolean-${value}` : '';
+          
+          return `
+            <div class="data-field">
+              <div class="data-field-label">${formatFieldName(key)}</div>
+              <div class="data-field-value ${valueClass}">${displayValue}</div>
+            </div>
+          `;
+        }).join('');
+      
+      return `
+        <div class="data-card">
+          <div class="data-card-header">
+            <div class="data-card-title">${titleLabel}</div>
+          </div>
+          <div class="data-card-body">
+            ${fields}
+          </div>
+        </div>
+      `;
+    }
+    
+    function formatFieldName(key) {
+      // Convert snake_case and camelCase to readable format
+      return key
+        .replace(/_/g, ' ')
+        .replace(/([A-Z])/g, ' $1')
+        .trim()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    function formatValue(value) {
+      if (value === null || value === undefined) return '—';
+      if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+      if (typeof value === 'object') return JSON.stringify(value);
+      if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
+        // Format dates
+        return new Date(value).toLocaleDateString('es-AR');
+      }
+      return value;
+    }
+
+    function showLoading() {
+      const responseDiv = document.getElementById('response');
+      responseDiv.className = 'response-container';
+      responseDiv.innerHTML = '<div class="loading">Cargando...</div>';
+      delete responseDiv.dataset.lastResponse;
+    }
+
+    function showResponse(data, success) {
+      const responseDiv = document.getElementById('response');
+      
+      // Store response for view switching
+      responseDiv.dataset.lastResponse = JSON.stringify(data);
+      responseDiv.dataset.lastSuccess = success;
+      
+      if (currentViewMode === 'json') {
+        // JSON view
+        responseDiv.className = 'response-container';
+        const formatted = typeof data === 'string' 
+          ? data 
+          : JSON.stringify(data, null, 2);
+        responseDiv.textContent = formatted;
+      } else {
+        // Components view
+        responseDiv.className = 'response-container';
+        responseDiv.innerHTML = renderComponentView(data);
+      }
+    }
+
+    function showError(message) {
+      const responseDiv = document.getElementById('response');
+      responseDiv.className = 'response-container';
+      responseDiv.innerHTML = `<div class="error">Error: ${message}</div>`;
+      delete responseDiv.dataset.lastResponse;
+    }
+  </script>
+</body>
+</html>

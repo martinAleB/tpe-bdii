@@ -29,7 +29,7 @@ router.get("/active", async (req, res) => {
       },
       {
         $project: {
-          _id: 0,
+          _id: "$id_agente",
           nombre: 1,
           apellido: 1,
           matricula: 1,

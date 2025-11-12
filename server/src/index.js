@@ -18,7 +18,7 @@ app.use(express.json())
 await seedDatabase(db)
 
 app.get("/", (req, res) => res.send("OK"))
-
+app.get("/gui", (req, res) => res.sendFile("index.html", { root: "." }))
 app.use("/api/agentes", agentesRouter)
 app.use("/api/clientes", clientesRouter)
 app.use("/api/siniestros", siniestrosRouter)
