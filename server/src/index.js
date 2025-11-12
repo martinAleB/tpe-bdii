@@ -7,6 +7,8 @@ import clientesRouter from "./routes/clientes.js"
 import siniestrosRouter from "./routes/siniestros.js"
 import vehiculosRouter from "./routes/vehiculos.js"
 import polizasRouter from "./routes/polizas.js"
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from '../swagger.js';
 
 dotenv.config()
 
@@ -19,6 +21,7 @@ await seedDatabase(db)
 
 app.get("/", (req, res) => res.send("OK"))
 app.get("/gui", (req, res) => res.sendFile("index.html", { root: "." }))
+app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/api/agentes", agentesRouter)
 app.use("/api/clientes", clientesRouter)
 app.use("/api/siniestros", siniestrosRouter)

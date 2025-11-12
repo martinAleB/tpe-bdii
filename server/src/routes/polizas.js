@@ -6,7 +6,37 @@ const router = Router();
 const COLL_NAME = "polizas";
 const CLIENTES_COLL = "clientes";
 const AGENTES_COLL = "agentes";
-
+/**
+ * @swagger
+ * /api/polizas/expired:
+ *   get:
+ *     summary: Obtiene pólizas vencidas con info de cliente
+ *     tags: [Polizas]
+ *     responses:
+ *       200:
+ *         description: Lista de pólizas vencidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   nro_poliza:
+ *                     type: string
+ *                   fecha_fin:
+ *                     type: string
+ *                     format: date-time
+ *                   cliente:
+ *                     type: object
+ *                     properties:
+ *                       nombre:
+ *                         type: string
+ *                       apellido:
+ *                         type: string
+ *       500:
+ *         description: Error del servidor
+ */
 router.get("/expired", async (req, res) => {
     try {
         const pipeline = [
@@ -56,7 +86,24 @@ router.get("/expired", async (req, res) => {
     }
 });
 
-
+/**
+ * @swagger
+ * /api/polizas/active-by-date:
+ *   get:
+ *     summary: Obtiene pólizas activas ordenadas por fecha de inicio
+ *     tags: [Polizas]
+ *     responses:
+ *       200:
+ *         description: Lista de pólizas activas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Poliza'
+ *       500:
+ *         description: Error del servidor
+ */
 router.get("/active-by-date", async (req, res) => {
   try {
     const pipeline = [
@@ -92,7 +139,50 @@ router.get("/active-by-date", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch pólizas activas" });
   }
 });
-
+/**
+ * @swagger
+ * /api/polizas/suspended-with-client-info:
+ *   get:
+ *     summary: Obtiene pólizas suspendidas con información del cliente
+ *     tags: [Polizas]
+ *     responses:
+ *       200:
+ *         description: Lista de pólizas suspendidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_poliza:
+ *                     type: integer
+ *                   id_cliente:
+ *                     type: integer
+ *                   fecha_inicio:
+ *                     type: string
+ *                     format: date-time
+ *                   fecha_fin:
+ *                     type: string
+ *                     format: date-time
+ *                   prima_mensual:
+ *                     type: number
+ *                   estado:
+ *                     type: string
+ *                   cobertura_total:
+ *                     type: number
+ *                   cliente:
+ *                     type: object
+ *                     properties:
+ *                       nombre:
+ *                         type: string
+ *                       apellido:
+ *                         type: string
+ *                       activo:
+ *                         type: boolean
+ *       500:
+ *         description: Error del servidor
+ */
 router.get("/suspended-with-client-info", async (req, res) => {
   try {
     const pipeline = [
@@ -136,7 +226,54 @@ router.get("/suspended-with-client-info", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch pólizas suspendidas" });
   }
 });
-
+/**
+ * @swagger
+ * /api/polizas:
+ *   post:
+ *     summary: Emite una nueva póliza
+ *     tags: [Polizas]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_cliente:
+ *                 type: integer
+ *               id_agente:
+ *                 type: integer
+ *               tipo:
+ *                 type: string
+ *               fecha_inicio:
+ *                 type: string
+ *                 format: date
+ *               fecha_fin:
+ *                 type: string
+ *                 format: date
+ *               prima_mensual:
+ *                 type: number
+ *               cobertura_total:
+ *                 type: number
+ *               estado:
+ *                 type: string
+ *                 description: Opcional. "Activa", "Vencida" o "Suspendida". Default "Activa".
+ *             required:
+ *               - id_cliente
+ *               - id_agente
+ *               - tipo
+ *               - fecha_inicio
+ *               - fecha_fin
+ *               - prima_mensual
+ *               - cobertura_total
+ *     responses:
+ *       201:
+ *         description: Póliza emitida correctamente
+ *       400:
+ *         description: Datos inválidos, faltan campos, cliente/agente no activo, o fechas/montos incorrectos
+ *       500:
+ *         description: Error del servidor
+ */
 router.post("/", async (req, res) => {
   try {
     const {

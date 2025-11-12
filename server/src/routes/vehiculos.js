@@ -6,6 +6,38 @@ const COLL_NAME = "vehiculos";
 const CLIENTES_COLL = "clientes";
 const POLIZAS_COLL = "polizas";
 
+/**
+ * @swagger
+ * /api/vehiculos/insured:
+ *   get:
+ *     summary: Obtiene vehículos asegurados con info de cliente y póliza
+ *     tags: [Vehiculos]
+ *     responses:
+ *       200:
+ *         description: Lista de vehículos asegurados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   patente:
+ *                     type: string
+ *                   cliente:
+ *                     type: object
+ *                     properties:
+ *                       nombre:
+ *                         type: string
+ *                       apellido:
+ *                         type: string
+ *                   poliza:
+ *                     type: string
+ *                     description: nro_poliza
+ *       500:
+ *         description: Error del servidor
+ */
+
 router.get("/insured", async (req, res) => {
   try {
     const pipeline = [
