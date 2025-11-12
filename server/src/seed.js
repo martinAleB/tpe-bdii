@@ -5,6 +5,33 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CSV_DIR = path.resolve(__dirname, "../../data/csv");
+const POLIZAS_COLLECTION = "polizas";
+const ACTIVE_POLIZAS_VIEW = "vw_polizas_activas_por_fecha";
+const ACTIVE_POLIZAS_PIPELINE = [
+  {
+    $match: {
+      estado: { $in: ["Activa"] },
+    },
+  },
+  {
+    $sort: {
+      fecha_inicio: 1,
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      id_poliza: 1,
+      id_cliente: 1,
+      id_agente: 1,
+      fecha_inicio: 1,
+      fecha_fin: 1,
+      prima_mensual: 1,
+      cobertura_total: 1,
+      estado: 1,
+    },
+  },
+];
 
 const COLLECTION_SOURCES = [
   {
@@ -67,6 +94,7 @@ export async function seedDatabase(db) {
   await Promise.all(
     COLLECTION_SOURCES.map((source) => seedCollection(db, source))
   );
+  await ensureActivePolizasView(db);
 }
 
 async function seedCollection(db, { collection, file, transform }) {
@@ -94,6 +122,32 @@ async function seedCollection(db, { collection, file, transform }) {
   console.log(
     `[seed] Insertados ${documents.length} documentos en ${collection}`
   );
+}
+
+async function ensureActivePolizasView(db) {
+  const cursor = db.listCollections({
+    name: ACTIVE_POLIZAS_VIEW,
+    type: "view",
+  });
+  if (await cursor.hasNext()) {
+    return;
+  }
+
+  try {
+    await db.command({
+      create: ACTIVE_POLIZAS_VIEW,
+      viewOn: POLIZAS_COLLECTION,
+      pipeline: ACTIVE_POLIZAS_PIPELINE,
+    });
+    console.log(`[seed] Vista ${ACTIVE_POLIZAS_VIEW} creada correctamente.`);
+  } catch (err) {
+    if (err.codeName === "NamespaceExists") {
+      return;
+    }
+    console.error(
+      `[seed] No se pudo crear la vista ${ACTIVE_POLIZAS_VIEW}: ${err.message}`
+    );
+  }
 }
 
 function parseCsv(csvText, transform = identity) {
