@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es-AR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
       background: #2c3e50;
       color: #ecf0f1;
       overflow-y: auto;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     }
 
     .sidebar h1 {
@@ -74,10 +75,25 @@
       margin-right: 8px;
     }
 
-    .method-get { background: #27ae60; color: white; }
-    .method-post { background: #3498db; color: white; }
-    .method-put { background: #f39c12; color: white; }
-    .method-delete { background: #e74c3c; color: white; }
+    .method-get {
+      background: #27ae60;
+      color: white;
+    }
+
+    .method-post {
+      background: #3498db;
+      color: white;
+    }
+
+    .method-put {
+      background: #f39c12;
+      color: white;
+    }
+
+    .method-delete {
+      background: #e74c3c;
+      color: white;
+    }
 
     .main-content {
       flex: 1;
@@ -103,7 +119,7 @@
       background: white;
       padding: 25px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       margin-bottom: 25px;
     }
 
@@ -165,7 +181,7 @@
       background: white;
       padding: 25px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .response-section h3 {
@@ -315,11 +331,12 @@
     }
   </style>
 </head>
+
 <body>
   <div class="sidebar">
     <h1>Explorador de API</h1>
-    
-    
+
+
 
     <div class="endpoint-group">
       <h2>Agentes</h2>
@@ -416,10 +433,10 @@
   </div>
 
   <script>
-    const API_BASE = 'http://localhost:3000';
-    
+    const API_BASE = window.location.origin;
+
     let currentViewMode = 'components'; // 'components' or 'json'
-    
+
     const endpoints = {
       'root': {
         title: 'Estado de Salud',
@@ -554,10 +571,10 @@
       item.addEventListener('click', () => {
         document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('active'));
         item.classList.add('active');
-        
+
         const endpointKey = item.getAttribute('data-endpoint');
         const endpoint = endpoints[endpointKey];
-        
+
         if (endpoint) {
           endpoint.render(endpoint);
         }
@@ -586,7 +603,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -615,7 +632,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -669,7 +686,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -728,7 +745,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -757,7 +774,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -816,7 +833,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -867,7 +884,7 @@
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
       `;
-      
+
       document.getElementById('content-area').innerHTML = content;
     }
 
@@ -877,7 +894,7 @@
       try {
         const response = await fetch(API_BASE + url);
         const data = await response.text();
-        
+
         try {
           const jsonData = JSON.parse(data);
           showResponse(jsonData, response.ok);
@@ -895,7 +912,7 @@
         showError('Please enter a client ID');
         return;
       }
-      
+
       showLoading();
       try {
         const response = await fetch(`${API_BASE}/api/clientes/${id}`);
@@ -910,7 +927,7 @@
       event.preventDefault();
       const form = event.target;
       const formData = new FormData(form);
-      
+
       const body = {
         nombre: formData.get('nombre'),
         apellido: formData.get('apellido'),
@@ -918,7 +935,7 @@
         email: formData.get('email'),
         activo: formData.get('activo') === 'true'
       };
-      
+
       showLoading();
       try {
         const response = await fetch(`${API_BASE}/api/clientes`, {
@@ -939,14 +956,14 @@
       const form = event.target;
       const formData = new FormData(form);
       const id = formData.get('id');
-      
+
       const body = {};
       if (formData.get('nombre')) body.nombre = formData.get('nombre');
       if (formData.get('apellido')) body.apellido = formData.get('apellido');
       if (formData.get('telefono')) body.telefono = formData.get('telefono');
       if (formData.get('email')) body.email = formData.get('email');
       if (formData.get('activo')) body.activo = formData.get('activo') === 'true';
-      
+
       showLoading();
       try {
         const response = await fetch(`${API_BASE}/api/clientes/${id}`, {
@@ -968,7 +985,7 @@
         showError('Please enter a client ID');
         return;
       }
-      
+
       showLoading();
       try {
         const response = await fetch(`${API_BASE}/api/clientes/${id}`, {
@@ -985,7 +1002,7 @@
       event.preventDefault();
       const form = event.target;
       const formData = new FormData(form);
-      
+
       const body = {
         id_cliente: parseInt(formData.get('id_cliente')),
         id_agente: parseInt(formData.get('id_agente')),
@@ -993,9 +1010,9 @@
         fecha_fin: formData.get('fecha_vencimiento'),
         cobertura_total: parseFloat(formData.get('cobertura_total')),
         prima_mensual: parseFloat(formData.get('prima_mensual')),
-        tipo:formData.get('tipo')
+        tipo: formData.get('tipo')
       };
-      
+
       showLoading();
       try {
         const response = await fetch(`${API_BASE}/api/polizas`, {
@@ -1015,14 +1032,14 @@
       event.preventDefault();
       const form = event.target;
       const formData = new FormData(form);
-      
+
       const body = {
         id_poliza: parseInt(formData.get('id_poliza')),
         tipo: formData.get('tipo'),
         descripcion: formData.get('descripcion'),
         fecha: formData.get('fecha')
       };
-      
+
       showLoading();
       try {
         const response = await fetch(`${API_BASE}/api/siniestros`, {
@@ -1041,12 +1058,12 @@
     // UI helper functions
     function toggleView(mode) {
       currentViewMode = mode;
-      
+
       // Update button states
       const buttons = document.querySelectorAll('.view-toggle button');
       buttons.forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
-      
+
       // Re-render current response if exists
       const responseDiv = document.getElementById('response');
       if (responseDiv.dataset.lastResponse) {
@@ -1055,40 +1072,40 @@
         showResponse(data, success);
       }
     }
-    
+
     function renderComponentView(data) {
       if (!data) {
         return '<div class="empty-state"><div class="empty-state-icon">📭</div><div>Sin datos para mostrar</div></div>';
       }
-      
+
       // Handle single object
       if (!Array.isArray(data)) {
         return renderSingleComponent(data);
       }
-      
+
       // Handle array of objects
       if (data.length === 0) {
         return '<div class="empty-state"><div class="empty-state-icon">📭</div><div>No hay resultados</div></div>';
       }
-      
+
       return `<div class="data-list">${data.map(renderSingleComponent).join('')}</div>`;
     }
-    
+
     function renderSingleComponent(item) {
       if (typeof item !== 'object' || item === null) {
         return `<div class="data-card"><div class="data-field-value">${item}</div></div>`;
       }
-      
+
       // Determine title field (id or first field)
       const titleField = item.id || item._id || item.id_cliente || item.id_agente || item.id_poliza || item.nombre || Object.values(item)[0];
       const titleLabel = item.id ? `ID: ${item.id}` : (item._id ? `ID: ${item._id}` : 'Registro');
-      
+
       const fields = Object.entries(item)
         .filter(([key]) => key !== '_id' && key !== '__v')
         .map(([key, value]) => {
           const displayValue = formatValue(value);
           const valueClass = typeof value === 'boolean' ? `boolean-${value}` : '';
-          
+
           return `
             <div class="data-field">
               <div class="data-field-label">${formatFieldName(key)}</div>
@@ -1096,7 +1113,7 @@
             </div>
           `;
         }).join('');
-      
+
       return `
         <div class="data-card">
           <div class="data-card-header">
@@ -1108,7 +1125,7 @@
         </div>
       `;
     }
-    
+
     function formatFieldName(key) {
       // Convert snake_case and camelCase to readable format
       return key
@@ -1119,7 +1136,7 @@
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
     }
-    
+
     function formatValue(value) {
       if (value === null || value === undefined) return '—';
       if (typeof value === 'boolean') return value ? 'Sí' : 'No';
@@ -1140,16 +1157,16 @@
 
     function showResponse(data, success) {
       const responseDiv = document.getElementById('response');
-      
+
       // Store response for view switching
       responseDiv.dataset.lastResponse = JSON.stringify(data);
       responseDiv.dataset.lastSuccess = success;
-      
+
       if (currentViewMode === 'json') {
         // JSON view
         responseDiv.className = 'response-container';
-        const formatted = typeof data === 'string' 
-          ? data 
+        const formatted = typeof data === 'string'
+          ? data
           : JSON.stringify(data, null, 2);
         responseDiv.textContent = formatted;
       } else {
@@ -1167,4 +1184,5 @@
     }
   </script>
 </body>
+
 </html>
