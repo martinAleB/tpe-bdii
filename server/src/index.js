@@ -20,8 +20,6 @@ app.use(express.json())
 
 await seedDatabase(db)
 
-redis.del("ranking:cobertura_total")
-
 app.get("/", (req, res) => res.sendFile("index.html", { root: "." }))
 app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/api/agentes", agentesRouter)
