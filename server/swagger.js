@@ -13,7 +13,7 @@ const options = {
       version: '1.0.0',
     },
   },
-  apis: [path.join(__dirname, 'src/routes/*.js')], // absolute path from project root
+  apis: [path.join(__dirname, 'src/routes/*.js')],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);

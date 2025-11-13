@@ -20,7 +20,7 @@ app.use(express.json())
 await seedDatabase(db)
 
 app.get("/", (req, res) => res.sendFile("index.html", { root: "." }))
-app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/api/agentes", agentesRouter)
 app.use("/api/clientes", clientesRouter)
 app.use("/api/siniestros", siniestrosRouter)
