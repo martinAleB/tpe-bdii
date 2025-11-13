@@ -1,5 +1,6 @@
 import { Router } from "express";
 import db from "../mongo-client.js";
+import redis from "../redis-client.js";
 
 const router = Router();
 const COLL_NAME = "agentes";
@@ -37,7 +38,14 @@ const SINIESTROS_COLL = "siniestros";
  *         description: Error del servidor
  */
 router.get("/active", async (req, res) => {
+  const cacheKey = "agentes:active";
+
   try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
     const pipeline = [
       {
         $match: {
@@ -68,6 +76,7 @@ router.get("/active", async (req, res) => {
       },
     ];
     const activeAgentes = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    await redis.set(cacheKey, JSON.stringify(activeAgentes), "EX", 60);
     res.json(activeAgentes);
   } catch (err) {
     console.error("Error fetching active agentes", err);
@@ -109,9 +118,15 @@ router.get("/active", async (req, res) => {
  *         description: Error del servidor
  */
 router.get("/with-sinisters-count", async (req, res) => {
-  try {
-    const pipeline = [
+  const cacheKey = "agentes:with-sinisters-count";
 
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
+    const pipeline = [
       {
         $lookup: {
           from: POLIZAS_COLL,
@@ -160,8 +175,8 @@ router.get("/with-sinisters-count", async (req, res) => {
     ];
 
     const agentesWithSinisters = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    await redis.set(cacheKey, JSON.stringify(agentesWithSinisters), "EX", 60);
     res.json(agentesWithSinisters);
-
   } catch (err) {
     console.error("Error fetching agentes with sinisters count", err);
     res.status(500).json({ error: "Failed to fetch agentes with sinisters count" });

@@ -343,11 +343,20 @@ router.post("/", async (req, res) => {
 
     await db.collection(COLL_NAME).insertOne(nuevaPoliza);
 
-    await redis.zincrby(
-      "ranking:cobertura_total",
-      cobertura_total,
-      id_cliente.toString()
-    );
+    const rankingKey = "ranking:cobertura_total";
+    const rankingExists = await redis.exists(rankingKey);
+
+    if (rankingExists) {
+      const rankingSize = await redis.zcard(rankingKey);
+
+      if (rankingSize >= 10) {
+        await redis.zincrby(rankingKey, cobertura, id_cliente.toString());
+      } else {
+        await redis.del(rankingKey);
+      }
+    }
+
+    await redis.del("agentes:active");
 
     res.status(201).json({
       message: "Póliza emitida correctamente",
