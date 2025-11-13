@@ -9,7 +9,6 @@ import vehiculosRouter from "./routes/vehiculos.js"
 import polizasRouter from "./routes/polizas.js"
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from '../swagger.js';
-import redis from "./redis-client.js"
 
 dotenv.config()
 
