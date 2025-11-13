@@ -239,7 +239,6 @@
       flex: 1;
     }
 
-    /* Adding styles for component-based display */
     .data-list {
       display: flex;
       flex-direction: column;
@@ -346,7 +345,7 @@
       </div>
       <div class="endpoint-item" data-endpoint="agentes-sinisters">
         <span class="method-badge method-get">GET</span>
-        Con Conteo de Siniestros
+        Conteo de Siniestros
       </div>
     </div>
 
@@ -354,19 +353,19 @@
       <h2>Clientes</h2>
       <div class="endpoint-item" data-endpoint="clientes-multiple-vehicles">
         <span class="method-badge method-get">GET</span>
-        Múltiples Vehículos
+        Clientes con Múltiples Vehículos
       </div>
       <div class="endpoint-item" data-endpoint="clientes-active">
         <span class="method-badge method-get">GET</span>
-        Clientes Con Pólizas Activas
+        Clientes con Pólizas Activas
       </div>
       <div class="endpoint-item" data-endpoint="clientes-top-cobertura">
         <span class="method-badge method-get">GET</span>
-        Top Cobertura
+        Clientes con Top Cobertura
       </div>
       <div class="endpoint-item" data-endpoint="clientes-no-active">
         <span class="method-badge method-get">GET</span>
-        Sin Pólizas Activas
+        Clientes sin Pólizas Activas
       </div>
       <div class="endpoint-item" data-endpoint="clientes-get-by-id">
         <span class="method-badge method-get">GET</span>
@@ -394,11 +393,11 @@
       </div>
       <div class="endpoint-item" data-endpoint="polizas-active">
         <span class="method-badge method-get">GET</span>
-        Activas por Fecha
+        Pólizas Activas por Fecha
       </div>
       <div class="endpoint-item" data-endpoint="polizas-suspended">
         <span class="method-badge method-get">GET</span>
-        Suspendidas
+        Pólizas Suspendidas
       </div>
       <div class="endpoint-item" data-endpoint="polizas-create">
         <span class="method-badge method-post">POST</span>
@@ -442,7 +441,7 @@
   <script>
     const API_BASE = window.location.origin;
 
-    let currentViewMode = 'components'; // 'components' or 'json'
+    let currentViewMode = 'components';
 
     const endpoints = {
       'root': {
@@ -580,7 +579,6 @@
       }
     };
 
-    // Event listeners
     document.querySelectorAll('.endpoint-item').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelectorAll('.endpoint-item').forEach(i => i.classList.remove('active'));
@@ -612,7 +610,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -641,7 +639,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -715,7 +713,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -774,7 +772,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -803,7 +801,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -862,7 +860,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -919,7 +917,7 @@
           <h3>Respuesta</h3>
           <div class="view-toggle">
             <button class="active" onclick="toggleView('components')">Vista Componentes</button>
-            <button onclick="toggleView('json')">JSON Crudo</button>
+            <button onclick="toggleView('json')">Vista JSON</button>
           </div>
           <div id="response" class="response-container empty">Sin respuesta aún</div>
         </div>
@@ -928,7 +926,6 @@
       document.getElementById('content-area').innerHTML = content;
     }
 
-    // API execution functions
     async function executeGet(url) {
       showLoading();
       try {
@@ -1100,16 +1097,13 @@
       }
     }
 
-    // UI helper functions
     function toggleView(mode) {
       currentViewMode = mode;
 
-      // Update button states
       const buttons = document.querySelectorAll('.view-toggle button');
       buttons.forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
 
-      // Re-render current response if exists
       const responseDiv = document.getElementById('response');
       if (responseDiv.dataset.lastResponse) {
         const data = JSON.parse(responseDiv.dataset.lastResponse);
@@ -1123,12 +1117,10 @@
         return '<div class="empty-state"><div class="empty-state-icon">📭</div><div>Sin datos para mostrar</div></div>';
       }
 
-      // Handle single object
       if (!Array.isArray(data)) {
         return renderSingleComponent(data);
       }
 
-      // Handle array of objects
       if (data.length === 0) {
         return '<div class="empty-state"><div class="empty-state-icon">📭</div><div>No hay resultados</div></div>';
       }
@@ -1141,7 +1133,6 @@
         return `<div class="data-card"><div class="data-field-value">${item}</div></div>`;
       }
 
-      // Determine title field (id or first field)
       const titleField = item.id || item._id || item.id_cliente || item.id_agente || item.id_poliza || item.nombre || Object.values(item)[0];
       const titleLabel = item.id ? `ID: ${item.id}` : (item._id ? `ID: ${item._id}` : 'Registro');
 
@@ -1172,7 +1163,6 @@
     }
 
     function formatFieldName(key) {
-      // Convert snake_case and camelCase to readable format
       return key
         .replace(/_/g, ' ')
         .replace(/([A-Z])/g, ' $1')
@@ -1187,7 +1177,6 @@
       if (typeof value === 'boolean') return value ? 'Sí' : 'No';
       if (typeof value === 'object') return JSON.stringify(value);
       if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
-        // Format dates
         return new Date(value).toLocaleDateString('es-AR');
       }
       return value;
@@ -1203,19 +1192,16 @@
     function showResponse(data, success) {
       const responseDiv = document.getElementById('response');
 
-      // Store response for view switching
       responseDiv.dataset.lastResponse = JSON.stringify(data);
       responseDiv.dataset.lastSuccess = success;
 
       if (currentViewMode === 'json') {
-        // JSON view
         responseDiv.className = 'response-container';
         const formatted = typeof data === 'string'
           ? data
           : JSON.stringify(data, null, 2);
         responseDiv.textContent = formatted;
       } else {
-        // Components view
         responseDiv.className = 'response-container';
         responseDiv.innerHTML = renderComponentView(data);
       }
