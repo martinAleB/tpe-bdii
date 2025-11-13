@@ -34,7 +34,14 @@ const VEHICULOS_COLL = "vehiculos";
  *         description: Error del servidor
  */
 router.get("/multiple-vehicles", async (req, res) => {
+  const cacheKey = "clientes:multiple-vehicles";
+
   try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
     const pipeline = [
       {
         $lookup: {
@@ -85,6 +92,7 @@ router.get("/multiple-vehicles", async (req, res) => {
     ];
 
     const clientes = await db.collection(COLL_NAME).aggregate(pipeline).toArray();
+    await redis.set(cacheKey, JSON.stringify(clientes), "EX", 60);
     res.json(clientes);
   } catch (err) {
     console.error("Error fetching clientes con múltiples vehículos", err);

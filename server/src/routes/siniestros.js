@@ -1,5 +1,6 @@
 import { Router } from "express";
 import db from "../mongo-client.js";
+import redis from "../redis-client.js";
 
 const router = Router();
 const COLL_NAME = "siniestros";
@@ -264,6 +265,8 @@ router.post("/", async (req, res) => {
     };
 
     await db.collection(COLL_NAME).insertOne(nuevoSiniestro);
+
+    await redis.del("agentes:with-sinisters-count");
 
     res.status(201).json({
       message: "Siniestro registrado correctamente",
