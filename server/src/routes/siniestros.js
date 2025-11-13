@@ -229,7 +229,7 @@ router.post("/", async (req, res) => {
     }
 
     const poliza = await db.collection(POLIZAS_COLL).findOne({
-      nro_poliza: nro_poliza.trim(),
+      nro_poliza: nro_poliza,
       estado: { $in: ["Activa", "Vigente"] },
     });
 
@@ -241,7 +241,7 @@ router.post("/", async (req, res) => {
 
     const estadoFinal = estado ? estado.trim() : "Abierto";
 
-    if (!estadosValidos.includes(estadoFinal)) {
+    if (!ESTADOS_VALIDOS.includes(estadoFinal)) {
       return res.status(400).json({
         error: `Estado inválido. Debe ser uno de: ${ESTADOS_VALIDOS.join(", ")}`,
       });

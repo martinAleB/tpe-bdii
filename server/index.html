@@ -358,7 +358,7 @@
       </div>
       <div class="endpoint-item" data-endpoint="clientes-active">
         <span class="method-badge method-get">GET</span>
-        Clientes Activos
+        Clientes Con Pólizas Activas
       </div>
       <div class="endpoint-item" data-endpoint="clientes-top-cobertura">
         <span class="method-badge method-get">GET</span>
@@ -474,7 +474,7 @@
         render: renderSimpleGetEndpoint
       },
       'clientes-active': {
-        title: 'Clientes Activos',
+        title: 'Clientes Con Pólizas Activas',
         description: 'Clientes activos con al menos una póliza activa/vigente',
         method: 'GET',
         url: '/api/clientes/active',
@@ -672,6 +672,26 @@
             </div>
             <div class="row">
               <div class="form-group">
+                <label>Dirección *</label>
+                <input type="text" name="direccion" placeholder="San Martín 202" required>
+              </div>
+              <div class="form-group">
+                <label>Ciudad *</label>
+                <input type=ẗext" name="ciudad" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
+                <label>DNI *</label>
+                <input type="int" name="dni" placeholder="12345678" required>
+              </div>
+              <div class="form-group">
+                <label>Provincia*</label>
+                <input type="text" name="provincia" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group">
                 <label>Teléfono *</label>
                 <input type="text" name="telefono" placeholder="+54 11 1234 5678" required>
               </div>
@@ -864,7 +884,7 @@
             <div class="row">
               <div class="form-group">
                 <label>ID de Póliza *</label>
-                <input type="number" name="id_poliza" required>
+                <input type="text" name="id_poliza" required>
               </div>
               <div class="form-group">
                 <label>Tipo *</label>
@@ -877,9 +897,15 @@
                 </select>
               </div>
             </div>
-            <div class="form-group">
+            <div class="row">
+              <div class="form-group">
               <label>Fecha *</label>
               <input type="date" name="fecha" required>
+              </div>
+              <div class="form-group">
+              <label>Monto Estimado *</label>
+              <input type="float" name="monto_estimado" required>
+              </div>
             </div>
             <div class="form-group">
               <label>Descripción *</label>
@@ -947,7 +973,11 @@
         apellido: formData.get('apellido'),
         telefono: formData.get('telefono'),
         email: formData.get('email'),
-        activo: formData.get('activo') === 'true'
+        activo: formData.get('activo') === 'true',
+        dni: parseInt(formData.get('dni')),
+        direccion: formData.get('direccion'),
+        ciudad: formData.get('ciudad'),
+        provincia: formData.get('provincia')
       };
 
       showLoading();
@@ -1048,10 +1078,11 @@
       const formData = new FormData(form);
 
       const body = {
-        id_poliza: parseInt(formData.get('id_poliza')),
+        nro_poliza: formData.get('id_poliza'),
         tipo: formData.get('tipo'),
         descripcion: formData.get('descripcion'),
-        fecha: formData.get('fecha')
+        fecha: formData.get('fecha'),
+        monto_estimado: parseFloat(formData.get('monto_estimado')) || 0
       };
 
       showLoading();
