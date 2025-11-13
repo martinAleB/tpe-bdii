@@ -421,6 +421,13 @@
         Crear Siniestro
       </div>
     </div>
+    <div class="endpoint-group">
+      <h2>Vehículos</h2>
+      <div class="endpoint-item" data-endpoint="vehiculos-insured">
+        <span class="method-badge method-get">GET</span>
+        Vehículos Asegurados
+      </div>
+    </div>
   </div>
 
   <div class="main-content">
@@ -563,6 +570,13 @@
         method: 'POST',
         url: '/api/siniestros',
         render: renderCreateSiniestroEndpoint
+      },
+      'vehiculos-insured': {
+        title: 'Vehículos Asegurados',
+        description: 'Obtiene vehículos asegurados con información de cliente y póliza',
+        method: 'GET',
+        url: '/api/vehiculos/insured',
+        render: renderSimpleGetEndpoint
       }
     };
 
