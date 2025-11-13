@@ -108,41 +108,6 @@ router.get("/active", async (req, res) => {
  *       500:
  *         description: Error del servidor
  */
-/**
- * @swagger
- * /api/agentes/with-sinisters-count:
- *   get:
- *     summary: Obtiene agentes con el conteo total de siniestros de sus pólizas
- *     tags:
- *       - Agentes
- *     responses:
- *       '200':
- *         description: Lista de agentes con conteo de siniestros
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id_agente:
- *                     type: integer
- *                   nombre:
- *                     type: string
- *                   apellido:
- *                     type: string
- *                   matricula:
- *                     type: string
- *                   telefono:
- *                     type: string
- *                   email:
- *                     type: string
- *                   siniestros:
- *                     type: integer
- *                     description: Cantidad total de siniestros
- *       '500':
- *         description: Error del servidor
- */
 router.get("/with-sinisters-count", async (req, res) => {
   try {
     const pipeline = [
