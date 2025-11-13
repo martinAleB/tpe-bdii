@@ -80,7 +80,8 @@ router.get("/insured", async (req, res) => {
                 $expr: {
                   $eq: [{ $toString: "$id_cliente" }, "$$vehiculoCliente"],
                 },
-                tipo: "Auto"
+                tipo: "Auto",
+                estado: "Activa"
               },
             },
             {
