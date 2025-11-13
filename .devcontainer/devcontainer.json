@@ -30,7 +30,7 @@
         "NODE_ENV": "development"
     },
     "postCreateCommand": "cd server && npm ci || npm i",
-    "postStartCommand": "cd server && npm run dev || npm start",
+    "postAttachCommand": "cd server && npm run dev || npm start",
     "mounts": [
         "source=devcontainer-npm-cache,target=/home/node/.npm,type=volume"
     ],
