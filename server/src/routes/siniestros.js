@@ -6,7 +6,39 @@ const COLL_NAME = "siniestros";
 const POLIZAS_COLL = "polizas";
 const CLIENTES_COLL = "clientes";
 const ESTADOS_VALIDOS = ["Abierto", "En evaluación", "Cerrado"];
-
+/**
+ * @swagger
+ * /api/siniestros/open:
+ *   get:
+ *     summary: Obtiene siniestros abiertos con info de cliente
+ *     tags: [Siniestros]
+ *     responses:
+ *       200:
+ *         description: Lista de siniestros abiertos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   fecha:
+ *                     type: string
+ *                     format: date-time
+ *                   tipo:
+ *                     type: string
+ *                   monto:
+ *                     type: number
+ *                   cliente:
+ *                     type: object
+ *                     properties:
+ *                       nombre:
+ *                         type: string
+ *                       apellido:
+ *                         type: string
+ *       500:
+ *         description: Error del servidor
+ */
 router.get("/open", async (req, res) => {
   try {
     const pipeline = [
@@ -81,7 +113,34 @@ router.get("/open", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch opened siniestros" });
   }
 });
-
+/**
+ * @swagger
+ * /api/siniestros/accidents-last-year:
+ *   get:
+ *     summary: Obtiene accidentes ocurridos en el último año
+ *     tags: [Siniestros]
+ *     responses:
+ *       200:
+ *         description: Lista de accidentes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id_siniestro:
+ *                     type: integer
+ *                   tipo:
+ *                     type: string
+ *                   fecha:
+ *                     type: string
+ *                     format: date-time
+ *                   monto_estimado:
+ *                     type: number
+ *       500:
+ *         description: Error del servidor
+ */
 router.get("/accidents-last-year", async (req, res) => {
   try {
     const now = new Date();
@@ -113,7 +172,47 @@ router.get("/accidents-last-year", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch accidentes del último año" });
   }
 });
-
+/**
+ * @swagger
+ * /api/siniestros:
+ *   post:
+ *     summary: Registra un nuevo siniestro
+ *     tags: [Siniestros]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nro_poliza:
+ *                 type: string
+ *               fecha:
+ *                 type: string
+ *                 format: date
+ *               tipo:
+ *                 type: string
+ *               monto_estimado:
+ *                 type: number
+ *               descripcion:
+ *                 type: string
+ *               estado:
+ *                 type: string
+ *                 description: Opcional. "Abierto", "En evaluación" o "Cerrado". Default "Abierto".
+ *             required:
+ *               - nro_poliza
+ *               - fecha
+ *               - tipo
+ *               - monto_estimado
+ *               - descripcion
+ *     responses:
+ *       201:
+ *         description: Siniestro registrado correctamente
+ *       400:
+ *         description: Datos inválidos, faltan campos, o la póliza no está activa/vigente
+ *       500:
+ *         description: Error del servidor
+ */
 router.post("/", async (req, res) => {
   try {
     const {
