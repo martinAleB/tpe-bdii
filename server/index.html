@@ -693,17 +693,10 @@
                 <label>Teléfono *</label>
                 <input type="text" name="telefono" placeholder="+54 11 1234 5678" required>
               </div>
-              <div class="form-group">
-                <label>Email *</label>
-                <input type="email" name="email" required>
-              </div>
-            </div>
             <div class="form-group">
-              <label>Activo</label>
-              <select name="activo">
-                <option value="true">Verdadero</option>
-                <option value="false">Falso</option>
-              </select>
+              <label>Email *</label>
+              <input type="email" name="email" required>
+            </div>
             </div>
             <button type="submit">Crear Cliente</button>
           </form>
@@ -841,9 +834,9 @@
               </div>
             </div>
             <div class="form-group">
-                <label>Tipo de Poliza *</label>
-                <input type="text" name="tipo" required>
-              </div>
+              <label>Tipo de Póliza *</label>
+              <input type="text" name="tipo" placeholder="Auto, Vida, Salud..." required>
+            </div>
             <div class="form-group">
               <label>Cobertura Total *</label>
               <input type="number" name="cobertura_total" step="0.01" placeholder="300000.00" required>
@@ -886,13 +879,7 @@
               </div>
               <div class="form-group">
                 <label>Tipo *</label>
-                <select name="tipo" required>
-                  <option value="">-- Seleccionar --</option>
-                  <option value="robo">Robo</option>
-                  <option value="accidente">Accidente</option>
-                  <option value="incendio">Incendio</option>
-                  <option value="otro">Otro</option>
-                </select>
+                <input type="text" name="tipo" placeholder="Accidente, Robo..." required>
               </div>
             </div>
             <div class="row">
@@ -970,7 +957,6 @@
         apellido: formData.get('apellido'),
         telefono: formData.get('telefono'),
         email: formData.get('email'),
-        activo: formData.get('activo') === 'true',
         dni: parseInt(formData.get('dni')),
         direccion: formData.get('direccion'),
         ciudad: formData.get('ciudad'),

@@ -15,6 +15,8 @@ El presente trabajo consiste en una plataforma de backoffice desarrollada en Nod
 - <b>Query 11 - Clientes con más de un vehículo asegurado</b>: `GET /api/clientes/multiple-vehicles` analiza la relación cliente/vehículos para encontrar duplicados.
 - <b>Query 12 - Agentes y cantidad de siniestros asociados</b>: `GET /api/agentes/with-sinisters-count` une pólizas y siniestros para contar incidentes por agente.
 - <b>Query 13 - ABM de clientes</b>: `POST /api/clientes`, `PUT /api/clientes/:id` y `DELETE /api/clientes/:id` permiten alta, modificación y baja lógica con validaciones.
+- <b>Query 14 - Alta de nuevos siniestros</b>: `POST /api/siniestros` registra un incidente validando póliza activa/vigente y datos obligatorios.
+- <b>Query 15 - Emisión de nuevas pólizas (validando cliente y agente)</b>: `POST /api/polizas` crea pólizas verificando que el cliente y el agente estén activos, además de chequear fechas y montos.
 
 <details>
   <summary>Contenidos</summary>
