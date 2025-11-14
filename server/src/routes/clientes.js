@@ -629,7 +629,7 @@ router.get("/:id_cliente", async (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             description: Campos a actualizar (al menos uno)
+ *             description: Campos a actualizar (al menos uno, el campo 'activo' no puede modificarse)
  *             properties:
  *               nombre:
  *                 type: string
@@ -647,8 +647,6 @@ router.get("/:id_cliente", async (req, res) => {
  *                 type: string
  *               provincia:
  *                 type: string
- *               activo:
- *                 type: boolean
  *     responses:
  *       200:
  *         description: Cliente actualizado correctamente
@@ -668,6 +666,12 @@ router.put("/:id_cliente", async (req, res) => {
       const updates = req.body;
 
       delete updates.id_cliente;
+
+      if (Object.prototype.hasOwnProperty.call(updates, "activo")) {
+        return res
+          .status(400)
+          .json({ error: "El campo 'activo' no puede modificarse desde este endpoint" });
+      }
 
       if (Object.keys(updates).length === 0) {
         return res.status(400).json({ error: "No se enviaron campos para actualizar" });
