@@ -1177,7 +1177,12 @@
       if (typeof value === 'boolean') return value ? 'Sí' : 'No';
       if (typeof value === 'object') return JSON.stringify(value);
       if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
-        return new Date(value).toLocaleDateString('es-AR');
+        // Force UTC formatting so the calendar date doesn't shift with the local tz
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.valueOf())) {
+          const [year, month, day] = parsed.toISOString().slice(0, 10).split('-');
+          return `${day}/${month}/${year}`;
+        }
       }
       return value;
     }
